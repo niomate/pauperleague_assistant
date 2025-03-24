@@ -1,5 +1,5 @@
 from img2table.document import Image
-from img2table.ocr import TesseractOCR, PaddleOCR
+from img2table.ocr import PaddleOCR
 import cv2
 import io
 
@@ -11,7 +11,7 @@ REGISTERED_PLAYERS = [
     "Mira Kubiczak",
     "Mathias Behre",
     "Alexis Darras",
-    "Alexander Ponticellio",
+    "Alexander Ponticello",
     "Marc Schmitz",
 ]
 
@@ -32,7 +32,6 @@ def extract_table(image):
     ret, encoded = cv2.imencode(".jpg", image)
     buf = io.BytesIO(encoded)
 
-    # ocr = TesseractOCR(n_threads=4)
     ocr = PaddleOCR()
     doc = Image(buf, detect_rotation=False)
 
