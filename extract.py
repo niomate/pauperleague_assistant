@@ -4,8 +4,6 @@ import cv2
 import io
 import json
 import os
-from collections import defaultdict
-import numpy as np
 import pandas as pd
 
 REGISTERED_PLAYERS = [
@@ -91,10 +89,10 @@ def update_standings(latest_rankings):
     else:
         standings = []
 
-    # standings.append(json.loads(latest_rankings.to_json(orient="records")))
+    standings.append(json.loads(latest_rankings.to_json(orient="records")))
 
-    # with open("rankings.json", "w") as f:
-    #     json.dump(standings, f)
+    with open("rankings.json", "w") as f:
+        json.dump(standings, f)
 
     return standings
 
@@ -123,5 +121,3 @@ if __name__ == "__main__":
     image = preprocess("table.jpeg")
     df = extract_table(image)
     df = fix_names(df, REGISTERED_PLAYERS)
-    standings = update_standings(df)
-    print(calculate_standings(standings))
