@@ -2,6 +2,11 @@ from img2table.document import Image
 from img2table.ocr import PaddleOCR
 import cv2
 import io
+import json
+import os
+from collections import defaultdict
+import numpy as np
+import pandas as pd
 
 REGISTERED_PLAYERS = [
     "Tigerente Till",
@@ -49,12 +54,13 @@ def extract_table(image):
 
     wld = df["W-L-D"].str.split(pat="-", expand=True).astype(int)
     wld.columns = ["W", "L", "D"]
+
     del df["Rank"]
     del df["index"]
     del df["W-L-D"]
-    df = df.join(wld)
-    df["OMW%"] = df["OMW%"].transform(lambda x: float(x.replace("%", "")))
+    del df["OMW%"]
 
+    df = df.join(wld)
     df["Points"] = 3 * df["W"] + df["D"]
 
     return df
@@ -78,8 +84,44 @@ def fix_names(df, registered_players):
     return df
 
 
+def update_standings(latest_rankings):
+    if os.path.exists("rankings.json"):
+        with open("rankings.json", "r") as f:
+            standings = json.load(f)
+    else:
+        standings = []
+
+    # standings.append(json.loads(latest_rankings.to_json(orient="records")))
+
+    # with open("rankings.json", "w") as f:
+    #     json.dump(standings, f)
+
+    return standings
+
+
+def calculate_standings(standings):
+    combined_standings = pd.DataFrame()
+    for fnm in standings:
+        df = pd.DataFrame(fnm)
+        combined_standings = pd.concat([combined_standings, df])
+
+    combined_standings = combined_standings.groupby("Name").sum()
+
+    combined_standings["Rounds Played"] = (
+        combined_standings["W"] + combined_standings["L"] + combined_standings["D"]
+    )
+
+    combined_standings["Average Points"] = (
+        combined_standings["Points"] / combined_standings["Rounds Played"]
+    )
+
+    combined_standings.sort_values(by="Average Points", ascending=False)
+    return combined_standings
+
+
 if __name__ == "__main__":
     image = preprocess("table.jpeg")
     df = extract_table(image)
     df = fix_names(df, REGISTERED_PLAYERS)
-    print(df)
+    standings = update_standings(df)
+    print(calculate_standings(standings))
