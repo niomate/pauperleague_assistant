@@ -121,3 +121,4 @@ if __name__ == "__main__":
     image = preprocess("table.jpeg")
     df = extract_table(image)
     df = fix_names(df, REGISTERED_PLAYERS)
+    print(df)
